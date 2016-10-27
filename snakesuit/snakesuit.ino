@@ -1,16 +1,16 @@
 #include "FastLED.h"
 
-#define NUM_LEDS 194 
+#define NUM_LEDS 194
 #define DATA_PIN 5
 
 CRGB leds[NUM_LEDS];
 
 #define rows 9
 #define cols 30
-#define snakeMaxLength 20
+#define MAX_SNAKE_LENGTH 20
 
 int posX, posY, snakeLength;
-int snake[snakeMaxLength] = {-1};
+int snake[MAX_SNAKE_LENGTH];
 
 int lightarray[rows][cols] = {
   {111 ,110 ,109 ,108 ,107 ,106 ,105 ,104 ,103 ,102 ,101 ,100 ,99  ,98  ,97  ,     96  ,95  ,94  ,93  ,92  ,91  ,90  ,89  ,88  ,87  ,86  ,85  ,84  ,83  ,82  },
@@ -37,15 +37,15 @@ void setup() {
   posY = 5;
 
 
-  //initalize a bit of snake
+  //initalize snake
+  initSnake();
   addToSnake(lightarray[posY][posX]);
-//  addToSnake(lightarray[posY+1][posX]);
-//  addToSnake(lightarray[posY+1][posX+1]);
+
+  setNextPosition();
+  //  setNextPosition();
 
   // really should be in loop
   paintSnake();
-//  setNextPosition();
-//  setNextPosition();
 }
 
 void loop() {
@@ -55,37 +55,41 @@ void loop() {
 
 //sets all lights to black/off
 void setBlack() {
-   for(int i = 0; i < NUM_LEDS; i++) { 
+   for(int i = 0; i < NUM_LEDS; i++) {
       leds[i] = CRGB::Black;
    }
 }
 
-int getSnakeLength() {
-  return sizeof(snake)/sizeof(int);
+void initSnake() {
+    for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
+        snake[i] = -1;
+    }
+    Serial.print("voided snake\n");
+    printSnake();
 }
 
 void printSnake() {
-  for (int i=0; i<getSnakeLength(); i++) {
+  for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
     Serial.print(snake[i]);
     Serial.print("\n");
   }
 }
 
 void addToSnake(int light){
-  snakeLength = getSnakeLength();
   Serial.print("adding to snake, current len: ");
   Serial.print(snakeLength);
   Serial.print("\n");
   Serial.print("current snake:\n");
   printSnake();
   snake[snakeLength] = light;
-  Serial.print("printed, new snake:\n");
+  snakeLength++;
+  Serial.print("added, new snake:\n");
   printSnake();
 }
 
 void paintSnake(){
-  for(int i = 0; i < getSnakeLength(); i++) {
-    leds[snake[i]] = CRGB::Blue; 
+  for(int i = 0; i < MAX_SNAKE_LENGTH; i++) {
+    leds[snake[i]] = CRGB::Blue;
   }
   FastLED.show();
 }
@@ -95,7 +99,7 @@ void setNextPosition() {
   int dir = random8(4);
   int newY;
   int newX;
-  
+
   if(dir == 0) { //up
     if(posY > 1) {
       newX = posX;
@@ -139,3 +143,4 @@ void setNextPosition() {
   posY = newY;
   addToSnake(lightarray[posY][posX]);
 }
+
