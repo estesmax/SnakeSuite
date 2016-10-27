@@ -10,7 +10,7 @@ CRGB leds[NUM_LEDS];
 #define snakeMaxLength 20
 
 int posX, posY, snakeLength;
-int snake[snakeMaxLength];
+int snake[snakeMaxLength] = {-1};
 
 int lightarray[rows][cols] = {
   {111 ,110 ,109 ,108 ,107 ,106 ,105 ,104 ,103 ,102 ,101 ,100 ,99  ,98  ,97  ,     96  ,95  ,94  ,93  ,92  ,91  ,90  ,89  ,88  ,87  ,86  ,85  ,84  ,83  ,82  },
@@ -24,6 +24,35 @@ int lightarray[rows][cols] = {
   {-1  ,-1  ,-1  ,193 ,192 ,191 ,190 ,189 ,188 ,187 ,186 ,185 ,-1  ,-1  ,-1  ,     -1  ,-1  ,-1  ,8   ,7   ,6   ,5   ,4   ,3   ,2   ,1   ,0   ,-1  ,-1  ,-1  }
 };
 
+void setup() {
+  // put your setup code here, to run once:
+  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
+  LEDS.setBrightness(50);
+  setBlack();
+  FastLED.show();
+  Serial.begin(9600);
+//  posX = random8(rows);
+//  posY = random8(cols);
+  posX = 6;
+  posY = 5;
+
+
+  //initalize a bit of snake
+  addToSnake(lightarray[posY][posX]);
+//  addToSnake(lightarray[posY+1][posX]);
+//  addToSnake(lightarray[posY+1][posX+1]);
+
+  // really should be in loop
+  paintSnake();
+//  setNextPosition();
+//  setNextPosition();
+}
+
+void loop() {
+//   put your main code here, to run repeatedly:
+//  paintSnake();
+}
+
 //sets all lights to black/off
 void setBlack() {
    for(int i = 0; i < NUM_LEDS; i++) { 
@@ -35,16 +64,28 @@ int getSnakeLength() {
   return sizeof(snake)/sizeof(int);
 }
 
+void printSnake() {
+  for (int i=0; i<getSnakeLength(); i++) {
+    Serial.print(snake[i]);
+    Serial.print("\n");
+  }
+}
+
 void addToSnake(int light){
   snakeLength = getSnakeLength();
+  Serial.print("adding to snake, current len: ");
+  Serial.print(snakeLength);
+  Serial.print("\n");
+  Serial.print("current snake:\n");
+  printSnake();
   snake[snakeLength] = light;
+  Serial.print("printed, new snake:\n");
+  printSnake();
 }
 
 void paintSnake(){
-  
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < getSnakeLength(); i++) {
     leds[snake[i]] = CRGB::Blue; 
-    Serial.print(snake[i]);
   }
   FastLED.show();
 }
@@ -97,52 +138,4 @@ void setNextPosition() {
   posX = newX;
   posY = newY;
   addToSnake(lightarray[posY][posX]);
-}
-
-void setup() {
-  // put your setup code here, to run once:
-  LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
-  LEDS.setBrightness(50);
-  setBlack();
-  FastLED.show();
-  Serial.begin(9600);
-//  posX = random8(rows);
-//  posY = random8(cols);
-  posX = 6;
-  posY = 5;
-
-
-  //initalize a bit of snake
-  addToSnake(lightarray[posY][posX]);
-  addToSnake(lightarray[posY+1][posX]);
-  addToSnake(lightarray[posY+1][posX+1]);
-//  setNextPosition();
-//  setNextPosition();
-
-
-
-//  for(int i = 0; i < sizeof(lightarray)/sizeof(int); i++) {
-//    leds[lightarray[random8(rows)][random8(cols)]] = CRGB::Red; 
-//    FastLED.show();
-//    delay(40);
-//  }
-
-//    paintSnake();
-//    leds[lightarray[9][4]] = CRGB::White;
-//    leds[lightarray[0][14]] = CRGB::Red;
-//    leds[lightarray[0][cols]] = CRGB::Blue;
-//    leds[lightarray[0][0]] = CRGB::Green;
-//    FastLED.show();
-}
-
-void loop() {
-//   put your main code here, to run repeatedly:
-  paintSnake();
-
-  
-//
-//  leds[lightarray[random8(rows)][random8(cols)]] = CRGB::Red; 
-//    FastLED.show();
-//    delay(40);
-  
 }
