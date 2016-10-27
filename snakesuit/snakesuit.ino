@@ -42,6 +42,12 @@ void setup() {
   addToSnake(lightarray[posY][posX]);
 
   setNextPosition();
+  setNextPosition();
+  setNextPosition();
+  setNextPosition();
+  setNextPosition();
+  setNextPosition();
+//  setNextPosition();
   //  setNextPosition();
 
   // really should be in loop
@@ -62,28 +68,29 @@ void setBlack() {
 
 void initSnake() {
     for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
-        snake[i] = -1;
+        snake[i] = -2;
     }
-    Serial.print("voided snake\n");
+    Serial.print("initialized snake\n");
     printSnake();
 }
 
 void printSnake() {
   for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
     Serial.print(snake[i]);
-    Serial.print("\n");
+    Serial.print(",");
   }
+  Serial.print("\n");
 }
 
 void addToSnake(int light){
-  Serial.print("adding to snake, current len: ");
+  Serial.print("adding to snake, current length: ");
   Serial.print(snakeLength);
   Serial.print("\n");
-  Serial.print("current snake:\n");
+  Serial.print("preivious snake:\n");
   printSnake();
   snake[snakeLength] = light;
   snakeLength++;
-  Serial.print("added, new snake:\n");
+  Serial.print("new snake:\n");
   printSnake();
 }
 
@@ -97,6 +104,9 @@ void paintSnake(){
 void setNextPosition() {
   //dir = 0:up 1:right 2:down 3:left
   int dir = random8(4);
+  Serial.print("New direction: ");
+  Serial.print(dir);
+  Serial.print("\n");
   int newY;
   int newX;
 
@@ -108,15 +118,15 @@ void setNextPosition() {
   } else if(dir == 1) { //right
     bool valid = false;
     newX = posX;
+    newY = posY;
     while(valid == false){
       if(posX >= cols){ //maybe try cols-1 when everything breaks
         posX = 0;
        } else {
         newX++;
        }
-      if(lightarray[posY][newX] != -1){
+      if(lightarray[newY][newX] != -1){
         valid = true;
-        newY = posY;
       }
     }
   } else if(dir == 2) { //down
@@ -127,15 +137,15 @@ void setNextPosition() {
   } else if(dir == 3) { //left
     bool valid = false;
     newY = posY;
+    newX = posX;
     while(valid == false){
-      if(newY == 0){
-        newY = cols;
-       } else {
-        newY--;
-       }
-      if(lightarray[posY][newX] != -1){
+      if(newX == 0){
+        newX = cols;
+      } else {
+        newX--;
+      }
+      if(lightarray[newY][newX] != -1){
         valid = true;
-        newY = posY;
       }
     }
   }
