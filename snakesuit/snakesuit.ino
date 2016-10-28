@@ -11,6 +11,8 @@ CRGB leds[NUM_LEDS];
 
 int posX, posY, snakeLength;
 int snake[MAX_SNAKE_LENGTH];
+int moveCount = 0;
+int snakeAlive = false;
 
 int lightarray[rows][cols] = {
     {111 ,110 ,109 ,108 ,107 ,106 ,105 ,104 ,103 ,102 ,101 ,100 ,99  ,98  ,97  ,     96  ,95  ,94  ,93  ,92  ,91  ,90  ,89  ,88  ,87  ,86  ,85  ,84  ,83  ,82  },
@@ -28,47 +30,81 @@ void setup() {
     // put your setup code here, to run once:
     LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
     LEDS.setBrightness(50);
+    // rainbow();
     setBlack();
     FastLED.show();
-    Serial.begin(9600);
-    //  posX = random8(rows);
-    //  posY = random8(cols);
-    posX = 6;
-    posY = 5;
+   // Serial.begin(9600);
+    //  posX = random8(rows-1);
+    //  posY = random8(cols-1);
+
 
 
     //initalize snake
     initSnake();
-    addToSnake(lightarray[posY][posX]);
+    // makeASnake();
+    paintSnake();
 
-    for (int i=0; i<5; i++) {
-        Serial.print("-----------------------------\n");
-        Serial.print("set new position! current: ");
-        Serial.print(posX);
-        Serial.print(", ");
-        Serial.print(posY);
-        Serial.print("\n");
-        setNextPosition();
-    }
     //  setNextPosition();
     //  setNextPosition();
 
     // really should be in loop
-    paintSnake();
+
 }
+
+
 
 void loop() {
     //   put your main code here, to run repeatedly:
     //  paintSnake();
+
+
+    if (moveCount == 50){
+      rainbow();
+      initSnake();
+    }
+
+    moveSnake();
+    moveCount++;
+    paintSnake();
+    delay(100);
 }
 
-void paintSnake(){
+void setSnakeLeds(){
     for(int i = 0; i < MAX_SNAKE_LENGTH; i++) {
         if (snake[i] >= 0) {
             leds[snake[i]] = CRGB::Blue;
         }
     }
+}
+
+void paintSnake(){
+    setBlack();
+    setSnakeLeds();
     FastLED.show();
+}
+
+void bump(){
+
+}
+
+void moveSnake(){
+
+    // move all left
+    for (int i = 0;  i < MAX_SNAKE_LENGTH - 1; i++){
+        snake[i]=snake[i+1];
+    }
+
+    //let it be known that the snake is shorter
+    snakeLength--;
+
+    // add one to end
+    setNextPosition();
+
+    //last is -2
+    snake[MAX_SNAKE_LENGTH - 1] = -2;
+    Serial.print("moveSnake:\n");
+    printSnake();
+
 }
 
 void addToSnake(int light){
@@ -79,21 +115,42 @@ void addToSnake(int light){
     // printSnake();
     snake[snakeLength] = light;
     snakeLength++;
-    Serial.print("new snake:\n");
-    printSnake();
+    // Serial.print("new snake:\n");
+    // printSnake();
+}
+void fail(){
+    for(int j = 0; j < 2; j++) {
+        for(int i = 0; i < NUM_LEDS; i++) {
+            leds[i] = CRGB(20,0,0);
+        }
+        setSnakeLeds();
+        FastLED.show();
+        delay(100);
+        setBlack();
+        setSnakeLeds();
+        FastLED.show();
+        delay(50);
+    }
 }
 
 void setNextPosition() {
     //dir = 0:up 1:right 2:down 3:left
     int dir = random8(4);
-    Serial.print("New direction: ");
-    Serial.print(dir);
-    Serial.print("\n");
+    // Serial.print("New direction: ");
+    // Serial.print(dir);
+    // Serial.print("\n");
     int newY;
     int newX;
 
     if (!hasMove(posX, posY)) {
-        1 / 0;
+        // 1 / 0;
+        Serial.print("Fail!");
+
+        fail();
+        initSnake();
+        moveCount = 0;
+        return;
+
     }
     // Try moving
     if(dir == 0) { //up
@@ -109,11 +166,11 @@ void setNextPosition() {
         newX = moveLeft(posX, posY);
         newY = posY;
     }
-    Serial.print("Check for opening at new position: ");
-    Serial.print(newX);
-    Serial.print(", ");
-    Serial.print(newY);
-    Serial.print("\n");
+    // Serial.print("Check for opening at new position: ");
+    // Serial.print(newX);
+    // Serial.print(", ");
+    // Serial.print(newY);
+    // Serial.print("\n");
     // Check if moved to open spot
     if (!isOpen(newX, newY, true)) {
         setNextPosition();
@@ -135,30 +192,30 @@ bool hasMove(int posX, int posY) {
 }
 
 bool isOpen(int posX, int posY, bool verbose) {
-    return 0 < posY && posY < rows && !isInSnake(lightarray[posY][posX], verbose);
+    return 0 < posY && posY < rows && !isInSnake(lightarray[posY][posX], verbose) && lightarray[posY][posX] != -1;
 }
 
 bool isInSnake(int lightID, bool verbose) {
     if (verbose) {
-        Serial.print("Test for light in snake. light id: ");
-        Serial.print(lightID);
-        Serial.print("\n");
+        // Serial.print("Test for light in snake. light id: ");
+        // Serial.print(lightID);
+        // Serial.print("\n");
     }
     printSnake();
     for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
         if (verbose) {
-            Serial.print("whaaaaa ");
-            Serial.print(snake[i]);
-            Serial.print(", ");
-            Serial.print(lightID);
-            Serial.print("\n");
+            // Serial.print("whaaaaa ");
+            // Serial.print(snake[i]);
+            // Serial.print(", ");
+            // Serial.print(lightID);
+            // Serial.print("\n");
         }
         if (snake[i] == lightID) {
-            if (verbose) Serial.print("have it!!!!\n");
+            // if (verbose) Serial.print("have it!!!!\n");
             return true;
         }
     }
-    if (verbose) Serial.print("no have it\n");
+    // if (verbose) Serial.print("no have it\n");
     return false;
 }
 
@@ -173,7 +230,8 @@ int moveRight(int posX, int posY) {
     bool offside = true;
     int newX = posX;
     while(offside) {
-        if(posX >= cols){ //maybe try cols-1 when everything breaks
+        Serial.print("Move Right: \n");
+        if(posX >= cols-1){ //maybe try cols-1 when everything breaks
             posX = 0;
         } else {
             newX++;
@@ -189,6 +247,7 @@ int moveLeft(int posX, int posY) {
     bool offside = true;
     int newX = posX;
     while(offside) {
+        Serial.print("Move Left: \n");
         if(newX == 0) {
             newX = cols;
         } else {
@@ -201,12 +260,71 @@ int moveLeft(int posX, int posY) {
     return newX;
 }
 
+void getValidPos() {
+     posX = random8(rows-1);
+     posY = random8(cols-1);
+     if (lightarray[posY][posX] == -1){
+         getValidPos();
+     }
+}
+
+static uint8_t hueb = 0;
+
+void rainbow(){
+      for (int forward = 0; forward < 20; forward++) {
+         for(int i = 0; i < NUM_LEDS; i++) {
+           leds[i] = CHSV(hueb, 255, 200);
+           hueb = hueb + (255/NUM_LEDS);
+         }
+         delay(80);
+         FastLED.show();
+         hueb = hueb + (255/NUM_LEDS);
+     }
+}
+
 void initSnake() {
+    moveCount = 0;
+    snakeLength = 0;
+    // getValidPos();
+    posX = 4;
+    posY = 4;
+
     for (int i=0; i<MAX_SNAKE_LENGTH; i++) {
         snake[i] = -2;
     }
-    Serial.print("initialized snake\n");
+
+    makeASnake();
+
+
+
+
+    // addToSnake(lightarray[posY][posX]);
+    //
+    // for (int i=0; i<10; i++) {
+    //     // Serial.print("-----------------------------\n");
+    //     // Serial.print("set new position! current: ");
+    //     // Serial.print(posX);
+    //     // Serial.print(", ");
+    //     // Serial.print(posY);
+    //     // Serial.print("\n");
+    //     setNextPosition();
+    // }
+
+    // Serial.print("initialized snake\n");
     printSnake();
+}
+void makeASnake(){
+    addToSnake(lightarray[posY][posX]);
+
+    for (int i=0; i<10; i++) {
+        // Serial.print("-----------------------------\n");
+        // Serial.print("set new position! current: ");
+        // Serial.print(posX);
+        // Serial.print(", ");
+        // Serial.print(posY);
+        // Serial.print("\n");
+        setNextPosition();
+    }
 }
 
 void printSnake() {
