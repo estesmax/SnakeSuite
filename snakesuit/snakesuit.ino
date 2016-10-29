@@ -29,7 +29,7 @@ int lightarray[rows][cols] = {
 void setup() {
     // put your setup code here, to run once:
     LEDS.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
-    LEDS.setBrightness(50);
+    LEDS.setBrightness(255);
     // rainbow();
     setBlack();
     FastLED.show();
@@ -58,8 +58,11 @@ void loop() {
     //  paintSnake();
 
 
-    if (moveCount == 50){
+    if (moveCount == 37){
       rainbow();
+      setBlack();
+      FastLED.show();
+      delay(500);
       initSnake();
     }
 
@@ -72,7 +75,11 @@ void loop() {
 void setSnakeLeds(){
     for(int i = 0; i < MAX_SNAKE_LENGTH; i++) {
         if (snake[i] >= 0) {
-            leds[snake[i]] = CRGB::Blue;
+            if (i == snakeLength-1){
+               leds[snake[i]] = CRGB::White;
+            } else {
+              leds[snake[i]] = CRGB::Blue;
+            }
         }
     }
 }
@@ -121,7 +128,7 @@ void addToSnake(int light){
 void fail(){
     for(int j = 0; j < 2; j++) {
         for(int i = 0; i < NUM_LEDS; i++) {
-            leds[i] = CRGB(20,0,0);
+            leds[i] = CRGB(40,0,0);
         }
         setSnakeLeds();
         FastLED.show();
@@ -131,6 +138,9 @@ void fail(){
         FastLED.show();
         delay(50);
     }
+    setBlack();
+    FastLED.show();
+    delay(300);
 }
 
 void setNextPosition() {
@@ -271,9 +281,9 @@ void getValidPos() {
 static uint8_t hueb = 0;
 
 void rainbow(){
-      for (int forward = 0; forward < 20; forward++) {
+      for (int forward = 0; forward < 40; forward++) {
          for(int i = 0; i < NUM_LEDS; i++) {
-           leds[i] = CHSV(hueb, 255, 200);
+           leds[i] = CHSV(hueb, 255, 100);
            hueb = hueb + (255/NUM_LEDS);
          }
          delay(80);
@@ -316,7 +326,7 @@ void initSnake() {
 void makeASnake(){
     addToSnake(lightarray[posY][posX]);
 
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<16; i++) {
         // Serial.print("-----------------------------\n");
         // Serial.print("set new position! current: ");
         // Serial.print(posX);
